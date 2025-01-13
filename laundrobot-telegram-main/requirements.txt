@@ -1,3 +1,4 @@
-python-telegram-bot==20.3
-Requests==2.31.0
+python-telegram-bot
+Requests
 python-telegram-bot[job-queue]
+python-dotenv

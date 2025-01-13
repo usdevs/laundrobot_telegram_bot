@@ -7,12 +7,15 @@ import json
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import asyncio
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-api_url = 'https://free-api-ryfe.onrender.com'
+#api_url = 'https://free-api-ryfe.onrender.com'
 #api_url = 'https://laundrobot-api.onrender.com/'
-#api_url = 'http://localhost:3002'
-online_token = 'REDACTED'
+api_url = 'http://localhost:3002'
+online_token = os.getenv('TELEGRAM_BOT_TOKEN')
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
