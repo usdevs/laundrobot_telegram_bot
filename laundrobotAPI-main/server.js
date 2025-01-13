@@ -6,12 +6,14 @@ const Dryer = require('./items/dryerModel')
 const cors = require('cors');
 const SeventeenDryer = require('./items/seventeenDryerModel');
 const SeventeenWasher = require('./items/seventeenWasherModel');
+const dotenv = require('dotenv').config()
+
 app.use(cors())
 
 app.use(express.json())
 
 
-mongoose.connect('REDACTED')
+mongoose.connect(dotenv.parsed['MONGODB_CONN'])
 .then(() => {
     app.listen(3002, () => {
         console.log(`Node API app is running on port 3002`)
