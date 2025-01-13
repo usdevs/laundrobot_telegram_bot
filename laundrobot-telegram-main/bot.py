@@ -229,10 +229,12 @@ async def get_status_message():
     final_str = '`Floor|  Item   | Time Left\n'
     for washer in washers_data_parsed:
         minutes_left = returnMinutesLeft(washer["updatedAt"],washer["timeLeftUserInput"])
-        final_str += f'  9  | {washer["name"]}|   {minutes_left}\n'
+        labels = washer["name"].split()
+        final_str += f'{labels[0]:5}| {labels[1]} {labels[2]}|   {minutes_left}\n'
     for dryer in dryers_data_parsed:
         minutes_left = returnMinutesLeft(dryer["updatedAt"],dryer["timeLeftUserInput"])
-        final_str += f'  9  | {dryer["name"][:-1]} {dryer["name"][-1]}|   {minutes_left}\n'
+        labels = dryer["name"].split()
+        final_str += f'{labels[0]:5}| {labels[1]}  {labels[2]}|   {minutes_left}\n'
 
     # Constructing Final String for Lvl 17 Washers and Dryers
     # washers_response_API = requests.get(f'{api_url}/seventeenWashers')

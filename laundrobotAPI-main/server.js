@@ -38,7 +38,13 @@ app.get('/reset', async (req, res) => {
         "Elm Washer 3", 
         "Elm Washer 4", 
         "Elm Washer 5", 
-        "Elm Washer 6"
+        "Elm Washer 6",
+        // "Saga Washer 1", 
+        // "Saga Washer 2", 
+        // "Saga Washer 3", 
+        // "Saga Washer 4", 
+        // "Saga Washer 5", 
+        // "Saga Washer 6"
     ]
     
     const dryers = [
@@ -48,6 +54,12 @@ app.get('/reset', async (req, res) => {
         "Elm Dryer 4", 
         "Elm Dryer 5", 
         "Elm Dryer 6", 
+        // "Saga Dryer 1", 
+        // "Saga Dryer 2", 
+        // "Saga Dryer 3", 
+        // "Saga Dryer 4", 
+        // "Saga Dryer 5", 
+        // "Saga Dryer 6", 
     ]
 
     for (const washer in washers) {
@@ -56,7 +68,7 @@ app.get('/reset', async (req, res) => {
     for (const dryer in dryers) {
         await Dryer.create({name: dryers[dryer], timeLeftUserInput: 0})
     }
-    res.send('reinit')
+    res.send('reset')
 })
 
 
