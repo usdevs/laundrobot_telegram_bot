@@ -82,34 +82,7 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = message.text
 
     if text == 'Status':
-        washers_response_API = requests.get(f'{api_url}/washers')
-        washers_data = washers_response_API.text
-        print(washers_data)
-        washers_data_parsed = json.loads(washers_data)
-        dryers_response_API = requests.get(f'{api_url}/dryers')
-        dryers_data = dryers_response_API.text
-        dryers_data_parsed = json.loads(dryers_data)
-        final_str = '`Floor|  Item   | Time Left\n'
-        for washer in washers_data_parsed:
-            minutes_left = returnMinutesLeft(washer["updatedAt"],washer["timeLeftUserInput"])
-            final_str += f'  9  | {washer["name"]}|   {minutes_left}\n'
-        for dryer in dryers_data_parsed:
-            minutes_left = returnMinutesLeft(dryer["updatedAt"],dryer["timeLeftUserInput"])
-            final_str += f'  9  | {dryer["name"][:-1]} {dryer["name"][-1]}|   {minutes_left}\n'
-
-        # washers_response_API = requests.get(f'{api_url}/seventeenWashers')
-        # washers_data = washers_response_API.text
-        # washers_data_parsed = json.loads(washers_data)
-        # dryers_response_API = requests.get(f'{api_url}/seventeenDryers')
-        # dryers_data = dryers_response_API.text
-        # dryers_data_parsed = json.loads(dryers_data)
-        # for washer in washers_data_parsed:
-        #     minutes_left = returnMinutesLeft(washer["updatedAt"],washer["timeLeftUserInput"])
-        #     final_str += f' 17  | {washer["name"]}|   {minutes_left}\n'
-        # for dryer in dryers_data_parsed:
-        #     minutes_left = returnMinutesLeft(dryer["updatedAt"],dryer["timeLeftUserInput"])
-        #     final_str += f' 17  | {dryer["name"][:-1]} {dryer["name"][-1]}|   {minutes_left}\n'
-        final_str += '`'
+        final_str = await get_status_message()
         await context.bot.send_message(chat_id=update.effective_chat.id, text=final_str, parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
     elif text == 'Main Menu':
         await start(update, context)
@@ -240,8 +213,8 @@ async def secretchannelmessage(update: Update, context: ContextTypes.DEFAULT_TYP
     message_id = message.message_id
     print(message_id)
 
-async def update_status_message(context: ContextTypes.DEFAULT_TYPE) -> None:
 
+async def get_status_message():
     # Constructing Final String for Lvl 9 Washers and Dryers
     washers_response_API = requests.get(f'{api_url}/washers')
     washers_data = washers_response_API.text
@@ -276,6 +249,10 @@ async def update_status_message(context: ContextTypes.DEFAULT_TYPE) -> None:
     #     final_str += f' 17  | {dryer["name"][:-1]} {dryer["name"][-1]}|   {minutes_left}\n'
     final_str = final_str[:-1]
     final_str += '`'
+    return final_str
+
+async def update_status_message(context: ContextTypes.DEFAULT_TYPE) -> None:
+    final_str = await get_status_message()
     await context.bot.edit_message_text( final_str, chat_id='-1001932990612', message_id='14', parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
 
 if __name__ == '__main__':
