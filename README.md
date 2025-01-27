@@ -87,8 +87,22 @@ pipenv shell
 python bot.py
 ```
 
-### Build & Deployment
+### Running with Docker Compose
+First, make sure you have a `.env` file in the root directory.
+```
+cp .env.bak .env
+```
+
+The `.env` file should contain the following variables:
+- `TELEGRAM_BOT_TOKEN` - the token for your telegram bot
+- `ENVIRONMENT` - either `dev` or `prod`
+
 Build and run the containers for MongoDB, API server, and telegram bot using docker compose
 ```
 npm run dock:up
+```
+
+To stop the containers, run
+```
+npm run dock:down
 ```

@@ -2,6 +2,7 @@
   "name": "laundrobot",
   "version": "0.1.0",
   "scripts": {
+    "check:env": "test -f .env || (echo 'Error: .env file not found in root directory' && exit 1)",
     "setup:all": "docker ps --format '{{.Names}}' | grep -q '^mongodb$' || npm run dock:mongo:up && npm run setup:api && npm run setup:bot",
     "setup:api": "cd laundrobotAPI-main && cp .env.bak .env && npm install",
     "setup:bot": "cd laundrobot-telegram-main && cp .env.bak .env && pipenv install",
@@ -9,7 +10,7 @@
     "dev:bot": "cd laundrobot-telegram-main && pipenv install && pipenv run python bot.py",
     "dock:mongo:up": "docker run -d --name mongodb -p 27017:27017 -v mongodb_data:/data/db --restart always mongo:6",
     "dock:mongo:down": "docker rm -f mongodb",
-    "dock:up": "docker rm -f mongodb && docker compose up",
+    "dock:up": "npm run check:env && docker rm -f mongodb && docker compose up",
     "dock:down": "docker compose down"
   }
 }
