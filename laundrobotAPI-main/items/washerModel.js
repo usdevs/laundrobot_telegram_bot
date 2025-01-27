@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const washerSchema = mongoose.Schema(
     {
@@ -23,4 +23,4 @@ const washerSchema = mongoose.Schema(
 
 const Washer = mongoose.model('Washer', washerSchema);
 
-module.exports = Washer;
+export default Washer;

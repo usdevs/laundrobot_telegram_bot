@@ -1,32 +1,37 @@
-const express = require('express')
+import express from 'express'
+import mongoose from 'mongoose'
+import Dryer from './items/dryerModel.js'
+import Washer from './items/washerModel.js'
+import cors from 'cors'
+import config from './config.js'
+
 const app = express()
-const mongoose = require('mongoose');
-const Washer = require('./items/washerModel')
-const Dryer = require('./items/dryerModel')
-const cors = require('cors');
-const dotenv = require('dotenv').config()
 
 app.use(cors())
 
 app.use(express.json())
 
+try {
+    console.log("Connecting to MongoDB... Please wait")
+    await mongoose.connect(config.mongodbConnection)
+    console.log('✅ Connected to MongoDB')
 
-mongoose.connect(dotenv.parsed['MONGODB_CONN'])
-.then(() => {
-    app.listen(3002, () => {
-        console.log(`Node API app is running on port 3002`)
-    })
-    console.log('Connected to mongodb')
-}).catch((e) => console.log(e))
+    mongoose.connection.on('error', e => {
+        console.error('❌ MongoDB connection error: ', e.message)
+    });
+} catch (e) {
+    console.error('❌ Failed to connect to MongoDB: ', e.message)
+    process.exit(0)
+}
 
-//Routes
+// Routes
 
-//ping
+// Ping
 app.get('/', (req, res) => {
     res.send('hello Laundrobot Api')
 })
 
-//delete
+// Delete
 // TODO: to make more secure
 app.get('/reset', async (req, res) => {
     await Washer.deleteMany({})
@@ -73,7 +78,7 @@ app.get('/reset', async (req, res) => {
 
 
 
-//Add a washer
+// Add a washer
 app.post('/addWasher', async(req, res) => {
     try {
         const washer = await Washer.create(req.body)
@@ -84,7 +89,7 @@ app.post('/addWasher', async(req, res) => {
     }
 })
 
-//Add a dryer 
+// Add a dryer 
 app.post('/addDryer', async(req, res) => {
     try {
         const dryer = await Dryer.create(req.body)
@@ -95,7 +100,7 @@ app.post('/addDryer', async(req, res) => {
     }
 })
 
-//get all washers
+// Get all washers
 app.get('/washers', async(req, res) => {
     try {
         const washers = await Washer.find({}); // get all products
@@ -107,7 +112,7 @@ app.get('/washers', async(req, res) => {
     }
 })
 
-//get all dryers
+// Get all dryers
 app.get('/dryers', async(req, res) => {
     try {
         const dryers = await Dryer.find({}); // get all products
@@ -118,7 +123,7 @@ app.get('/dryers', async(req, res) => {
 })
 
 
-//update a washer
+// Update a washer
 app.put('/washers/update', async(req, res) => {
     try{
         const washer_arr = await Washer.find({ "name": req.body["name"]});
@@ -141,7 +146,7 @@ app.put('/washers/update', async(req, res) => {
     }
 })
 
-//update a dryer
+// Update a dryer
 app.put('/dryers/update', async(req, res) => {
     try{
         const dryer_arr = await Dryer.find({ "name": req.body["name"]});
@@ -163,3 +168,10 @@ app.put('/dryers/update', async(req, res) => {
     }
 })
 
+app.listen(config.port, () => {
+    console.log(`✅ Node API app is running on http://localhost:${config.port}`)
+}).on('error', (e) => {
+    console.error('❌ Failed to start node server: ', e.message)
+    // We exit with 0 here because we don't need to clutter the console with stack trace
+    process.exit(0)
+})
