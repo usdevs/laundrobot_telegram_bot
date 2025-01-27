@@ -18,7 +18,7 @@ TODO: Add project description here
 ```
 npm run setup:all
 ```
-This will start up the local MongoDB container, and install the dependencies for the telegram bot and express API server. You only need to run this once.
+This will start up the local MongoDB container, and install the dependencies for the telegram bot and express API server.
 
 3. Then, start your local express API server
 ```
@@ -88,3 +88,7 @@ python bot.py
 ```
 
 ### Build & Deployment
+Build and run the containers for MongoDB, API server, and telegram bot using docker compose
+```
+npm run dock:up
+```
