@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - laundrobot-network
+
+  api:
+    build: 
+      context: ./laundrobotAPI-main
+      dockerfile: Dockerfile
+    container_name: laundrobot-api
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      - MONGODB_CONN=mongodb://mongodb:27017/laundrobot
+      - SERVER_PORT=3002
+    networks:
+      - laundrobot-network
+    depends_on:
+      - mongodb
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3002"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  bot:
+    build:
+      context: ./laundrobot-telegram-main
+      dockerfile: Dockerfile
+    container_name: laundrobot
+    restart: always
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - API_URL=http://api:3002
+      - ENVIRONMENT=${ENVIRONMENT}
+    networks:
+      - laundrobot-network
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  mongodb_data:
+
+networks:
+  laundrobot-network:
+    driver: bridge

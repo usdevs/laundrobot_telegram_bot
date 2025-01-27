@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const dryerSchema = mongoose.Schema(
     {
@@ -23,4 +23,4 @@ const dryerSchema = mongoose.Schema(
 
 const Dryer = mongoose.model('Dryer', dryerSchema);
 
-module.exports = Dryer;
+export default Dryer;

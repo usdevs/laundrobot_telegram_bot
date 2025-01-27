@@ -6,16 +6,9 @@ import requests
 import json
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-import asyncio
-import os
 from dotenv import load_dotenv
-
+from config import config, Environment
 load_dotenv()
-
-#api_url = 'https://free-api-ryfe.onrender.com'
-#api_url = 'https://laundrobot-api.onrender.com/'
-api_url = 'http://localhost:3002'
-online_token = os.getenv('TELEGRAM_BOT_TOKEN')
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -56,7 +49,7 @@ def returnMinutesLeft(updatedAt, timeLeftUserInput):
 def return_formatted_current_datetime():
     # Returns a nicely formatted string of the current date and time
     singapore_datetime = datetime.now(ZoneInfo('Singapore'))
-    curr_time_str = singapore_datetime.strftime("%Y\-%m\-%d %H:%M")
+    curr_time_str = singapore_datetime.strftime("%Y-%m-%d %H:%M")
     return curr_time_str
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -66,6 +59,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # [KeyboardButton("Update a machine")],
         # [KeyboardButton("Main Menu")]
     ]
+
+    dev_buttons = [KeyboardButton("DEV - Reset")]
+
+    if config.env == Environment.DEV:
+        buttons.append(dev_buttons)
+    
     text = 'Hello! I am Laundrobot!\n' \
         'I am here to assist with all laundry related matters. Here are ' \
         'some of the things that I can do!\n\n' \
@@ -86,6 +85,8 @@ async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=update.effective_chat.id, text=final_str, parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
     elif text == 'Main Menu':
         await start(update, context)
+    elif text == 'DEV - Reset':
+        await reset(update, context)
     else:
         await start(update, context)
 
@@ -151,13 +152,13 @@ async def final(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['machine_name'] = f"Dryer {machine_number}"
     json_body["timeLeftUserInput"] = timeLeftUserInput
     if floor_number_int == 9 and w_or_d.upper() == 'W':
-        r = requests.put(f'{api_url}/washers/update', json=json_body)
+        r = requests.put(f'{config.api_url}/washers/update', json=json_body)
     elif floor_number_int == 17 and w_or_d.upper() == 'W':
-        r = requests.put(f'{api_url}/seventeenWashers/update', json=json_body)
+        r = requests.put(f'{config.api_url}/seventeenWashers/update', json=json_body)
     elif floor_number_int == 9 and w_or_d.upper() == 'D':
-        r = requests.put(f'{api_url}/dryers/update', json=json_body)
+        r = requests.put(f'{config.api_url}/dryers/update', json=json_body)
     elif floor_number_int == 17 and w_or_d.upper() == 'D':
-        r = requests.put(f'{api_url}/seventeenDryers/update', json=json_body)
+        r = requests.put(f'{config.api_url}/seventeenDryers/update', json=json_body)
     
     if r.ok:
 
@@ -216,11 +217,11 @@ async def secretchannelmessage(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def get_status_message():
     # Constructing Final String for Lvl 9 Washers and Dryers
-    washers_response_API = requests.get(f'{api_url}/washers')
+    washers_response_API = requests.get(f'{config.api_url}/washers')
     washers_data = washers_response_API.text
 
     washers_data_parsed = json.loads(washers_data)
-    dryers_response_API = requests.get(f'{api_url}/dryers')
+    dryers_response_API = requests.get(f'{config.api_url}/dryers')
     dryers_data = dryers_response_API.text
     dryers_data_parsed = json.loads(dryers_data)
     updated_time = return_formatted_current_datetime()
@@ -237,10 +238,10 @@ async def get_status_message():
         final_str += f'{labels[0]:5}| {labels[1]}  {labels[2]}|   {minutes_left}\n'
 
     # Constructing Final String for Lvl 17 Washers and Dryers
-    # washers_response_API = requests.get(f'{api_url}/seventeenWashers')
+    # washers_response_API = requests.get(f'{config.api_url}/seventeenWashers')
     # washers_data = washers_response_API.text
     # washers_data_parsed = json.loads(washers_data)
-    # dryers_response_API = requests.get(f'{api_url}/seventeenDryers')
+    # dryers_response_API = requests.get(f'{config.api_url}/seventeenDryers')
     # dryers_data = dryers_response_API.text
     # dryers_data_parsed = json.loads(dryers_data)
     # for washer in washers_data_parsed:
@@ -257,8 +258,27 @@ async def update_status_message(context: ContextTypes.DEFAULT_TYPE) -> None:
     final_str = await get_status_message()
     await context.bot.edit_message_text( final_str, chat_id='-1001932990612', message_id='14', parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
 
+########################
+# Dev only functions
+########################
+
+async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Shouldn't happen, but just in case
+    if config.env != Environment.DEV:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="This is a dev only command")
+        return
+    try:
+        r = requests.get(f'{config.api_url}/reset')
+        if r.ok:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="Reset complete")
+        else:
+            r.raise_for_status()
+    except Exception as e:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Error resetting: {e}")
+
+
 if __name__ == '__main__':
-    application = ApplicationBuilder().token(online_token).build()
+    application = ApplicationBuilder().token(config.bot_token).build()
 
     start_handler = CommandHandler('start', start)
     start_update_loop_handler = CommandHandler('start_update_loop', start_update_loop)
@@ -284,5 +304,6 @@ if __name__ == '__main__':
     application.add_handler(message_handler)
     #need to start update loop whenever bot runs agian
     application.add_handler(unknown_handler)
+    print("✅ Bot is running")
     application.run_polling()
     
